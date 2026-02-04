@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.warehousewrangler.models.WarehouseIssue
 
@@ -82,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         checkForExternalDisplay(displayManager)
 
         // Setup Buttons
-        btnMissing.setOnClickListener { viewModel.markAsMissing() }
+        btnMissing.setOnClickListener { showMissingConfirmationDialog() }
         btnNext.setOnClickListener { viewModel.loadNextTask() }
         btnArMode.setOnClickListener {
             val intent = android.content.Intent(this, ArActivity::class.java)
@@ -125,6 +126,17 @@ class MainActivity : AppCompatActivity() {
     fun onScanReceived(data: String) {
         tvScannedSku.text = "Last Scan: $data"
         viewModel.processScan(data)
+    }
+
+    private fun showMissingConfirmationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Confirm")
+            .setMessage("Are you sure you want to mark this item as MISSING?")
+            .setPositiveButton("Mark Missing") { _, _ ->
+                viewModel.markAsMissing()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroy() {
