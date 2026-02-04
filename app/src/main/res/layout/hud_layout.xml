@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@android:color/black"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tv_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Location: --"
+        android:textSize="40sp"
+        android:textColor="@android:color/holo_green_light"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_sku"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="SKU: --"
+        android:textSize="32sp"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:id="@+id/tv_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Progress: 0/0"
+        android:textSize="32sp"
+        android:textColor="@android:color/holo_blue_light" />
+
+</LinearLayout>
