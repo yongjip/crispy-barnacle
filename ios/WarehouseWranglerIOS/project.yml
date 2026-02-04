@@ -12,8 +12,22 @@ targets:
     bundleId: com.yongjip.warehousewrangler.ios
     info:
       path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: WarehouseWrangler
+        UILaunchScreen: {}
+
+        NSCameraUsageDescription: We use the camera to scan barcodes for picking.
+
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default Configuration
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
+            UIWindowSceneSessionRoleExternalDisplay:
+              - UISceneConfigurationName: External Display
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).ExternalSceneDelegate
     sources:
       - Sources
     resources:
       - Resources
-
