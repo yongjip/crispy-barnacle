@@ -51,6 +51,28 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Manual scan (location / barcode)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_manual_scan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:imeOptions="actionDone" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/btn_manual_scan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Simulate Scan" />
+
     <Button
         android:id="@+id/btn_missing"
         android:layout_width="match_parent"
@@ -73,5 +95,12 @@
         android:layout_marginTop="16dp"
         android:text="Switch to AR Mode"
         android:backgroundTint="@android:color/holo_purple" />
+
+    <Button
+        android:id="@+id/btn_hud_preview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Open HUD Preview" />
 
 </LinearLayout>

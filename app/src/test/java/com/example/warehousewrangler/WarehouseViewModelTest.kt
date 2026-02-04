@@ -19,7 +19,7 @@ class WarehouseViewModelTest {
     val rule = InstantTaskExecutorRule()
 
     @Mock
-    lateinit var mockRepo: DynamoDBManager
+    lateinit var mockRepo: WarehouseRepository
 
     @Mock
     lateinit var statusObserver: Observer<String>
@@ -29,6 +29,9 @@ class WarehouseViewModelTest {
 
     @Mock
     lateinit var toastObserver: Observer<String>
+
+    @Mock
+    lateinit var stageObserver: Observer<PickScanStage>
 
     private lateinit var viewModel: WarehouseViewModel
 
@@ -46,6 +49,7 @@ class WarehouseViewModelTest {
         viewModel.statusMessage.observeForever(statusObserver)
         viewModel.currentIssue.observeForever(issueObserver)
         viewModel.toastMessage.observeForever(toastObserver)
+        viewModel.pickScanStage.observeForever(stageObserver)
     }
 
     @Test
@@ -65,7 +69,7 @@ class WarehouseViewModelTest {
 
         viewModel.loadNextTask()
 
-        verify(statusObserver).onChanged("Status: Searching")
+        verify(statusObserver).onChanged("Status: Scan Item")
         verify(issueObserver).onChanged(issue)
         assertEquals("SEARCHING", issue.status)
     }
@@ -144,5 +148,38 @@ class WarehouseViewModelTest {
         assertEquals("FOUND", issue.status)
         verify(statusObserver).onChanged("Status: Item Found! Updating...")
         verify(toastObserver).onChanged("Task Completed!")
+    }
+
+    @Test
+    fun `processScan requires location confirm when location is present`() {
+        val issue = WarehouseIssue().apply {
+            skuId = "TARGET-SKU"
+            targetQty = 2
+            currentQty = 0
+            locationCode = "A-01-01"
+            status = "SEARCHING"
+        }
+
+        doAnswer {
+            val callback = it.arguments[1] as (WarehouseIssue?) -> Unit
+            callback(issue)
+            null
+        }.`when`(mockRepo).fetchAssignedIssue(ArgumentMatchers.anyString(), any())
+
+        viewModel.loadNextTask()
+        assertEquals(PickScanStage.CONFIRM_LOCATION, viewModel.pickScanStage.value)
+
+        // Scanning SKU before confirming location should fail.
+        viewModel.processScan("TARGET-SKU")
+        assertEquals(0, issue.currentQty)
+        verify(toastObserver).onChanged("Wrong Location!")
+
+        // Confirm correct location.
+        viewModel.processScan("A-01-01")
+        assertEquals(PickScanStage.SCAN_ITEM, viewModel.pickScanStage.value)
+
+        // Now SKU scans should increment qty.
+        viewModel.processScan("TARGET-SKU")
+        assertEquals(1, issue.currentQty)
     }
 }

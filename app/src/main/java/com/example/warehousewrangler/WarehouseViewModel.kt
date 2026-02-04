@@ -4,12 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import com.example.warehousewrangler.models.WarehouseIssue
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
-class WarehouseViewModel(private val repository: DynamoDBManager) : ViewModel() {
+enum class PickScanStage {
+    CONFIRM_LOCATION,
+    SCAN_ITEM
+}
+
+class WarehouseViewModel(private val repository: WarehouseRepository) : ViewModel() {
 
     private val _currentIssue = MutableLiveData<WarehouseIssue?>()
     val currentIssue: LiveData<WarehouseIssue?> = _currentIssue
@@ -19,6 +21,9 @@ class WarehouseViewModel(private val repository: DynamoDBManager) : ViewModel() 
 
     private val _toastMessage = MutableLiveData<String>()
     val toastMessage: LiveData<String> = _toastMessage
+
+    private val _pickScanStage = MutableLiveData<PickScanStage>()
+    val pickScanStage: LiveData<PickScanStage> = _pickScanStage
 
     private val _userId = "USER_001" // Hardcoded for now
 
@@ -33,9 +38,13 @@ class WarehouseViewModel(private val repository: DynamoDBManager) : ViewModel() 
                     }
                 }
                 _currentIssue.postValue(issue)
-                _statusMessage.postValue("Status: Searching")
+                // Default picking flow: confirm location first, then scan item(s).
+                val needsLocationConfirm = !issue.targetLocation.isNullOrBlank() || !issue.locationCode.isNullOrBlank()
+                _pickScanStage.postValue(if (needsLocationConfirm) PickScanStage.CONFIRM_LOCATION else PickScanStage.SCAN_ITEM)
+                _statusMessage.postValue(if (needsLocationConfirm) "Status: Scan Location" else "Status: Scan Item")
             } else {
                 _currentIssue.postValue(null)
+                _pickScanStage.postValue(PickScanStage.CONFIRM_LOCATION)
                 _statusMessage.postValue("Status: No Tasks Assigned")
             }
         }
@@ -43,8 +52,35 @@ class WarehouseViewModel(private val repository: DynamoDBManager) : ViewModel() 
 
     fun processScan(data: String) {
         val issue = _currentIssue.value ?: return
+        val scanned = data.trim()
 
-        if (data == issue.skuId) {
+        val targetLocation = (issue.targetLocation ?: issue.locationCode)?.trim()
+        val skuId = issue.skuId?.trim()
+        val barcode = issue.barcode?.trim()
+
+        val stage = _pickScanStage.value ?: PickScanStage.CONFIRM_LOCATION
+
+        if (stage == PickScanStage.CONFIRM_LOCATION) {
+            if (!targetLocation.isNullOrBlank() && scanned.equals(targetLocation, ignoreCase = true)) {
+                _pickScanStage.postValue(PickScanStage.SCAN_ITEM)
+                _statusMessage.postValue("Status: Scan Item")
+                _toastMessage.postValue("Location confirmed: $targetLocation")
+            } else {
+                _toastMessage.postValue("Wrong Location!")
+            }
+            return
+        }
+
+        if (!targetLocation.isNullOrBlank() && scanned.equals(targetLocation, ignoreCase = true)) {
+            // Allow re-scanning location while in item stage without showing "Wrong SKU".
+            _toastMessage.postValue("Location confirmed: $targetLocation")
+            return
+        }
+
+        val matchesSku = (!skuId.isNullOrBlank() && scanned.equals(skuId, ignoreCase = true)) ||
+            (!barcode.isNullOrBlank() && scanned.equals(barcode, ignoreCase = true))
+
+        if (matchesSku) {
             issue.currentQty += 1
             _currentIssue.postValue(issue) // Trigger update
 
@@ -88,7 +124,7 @@ class WarehouseViewModel(private val repository: DynamoDBManager) : ViewModel() 
     }
 }
 
-class WarehouseViewModelFactory(private val repository: DynamoDBManager) : ViewModelProvider.Factory {
+class WarehouseViewModelFactory(private val repository: WarehouseRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(WarehouseViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")

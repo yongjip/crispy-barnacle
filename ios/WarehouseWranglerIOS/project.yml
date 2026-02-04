@@ -1,0 +1,19 @@
+name: WarehouseWranglerIOS
+
+options:
+  # Change this if you want a different bundle ID.
+  bundleIdPrefix: com.yongjip
+
+targets:
+  WarehouseWranglerIOS:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    bundleId: com.yongjip.warehousewrangler.ios
+    info:
+      path: Sources/Info.plist
+    sources:
+      - Sources
+    resources:
+      - Resources
+

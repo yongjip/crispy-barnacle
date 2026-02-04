@@ -7,9 +7,8 @@
     android:background="@android:color/black"
     android:padding="32dp">
 
-    <!-- High contrast location for visibility -->
     <TextView
-        android:id="@+id/tv_location"
+        android:id="@+id/tv_target_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="LOC: --"
@@ -28,14 +27,57 @@
         android:layout_marginBottom="16dp"
         android:background="#FFFFFF" />
 
-    <TextView
-        android:id="@+id/tv_sku"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="SKU: --"
-        android:textSize="48sp"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:id="@+id/iv_sku_image"
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:layout_marginEnd="24dp"
+            android:contentDescription="SKU image"
+            android:scaleType="centerCrop"
+            android:background="#222222" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_sku"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SKU: --"
+                android:textSize="40sp"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_barcode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="BAR: --"
+                android:textSize="24sp"
+                android:textColor="#DDDDDD" />
+
+            <TextView
+                android:id="@+id/tv_lot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="LOT: --"
+                android:textSize="24sp"
+                android:textColor="#DDDDDD" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tv_progress"
@@ -53,5 +95,15 @@
         android:text="UNITS"
         android:textSize="24sp"
         android:textColor="#AAAAAA" />
+
+    <TextView
+        android:id="@+id/tv_hud_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="SCAN LOCATION"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="#00FFFF" />
 
 </LinearLayout>

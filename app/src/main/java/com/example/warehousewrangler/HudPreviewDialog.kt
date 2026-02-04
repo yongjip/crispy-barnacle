@@ -1,21 +1,24 @@
 package com.example.warehousewrangler
 
-import android.app.Presentation
 import android.content.Context
 import android.os.Bundle
-import android.view.Display
+import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDialog
 import com.example.warehousewrangler.models.WarehouseIssue
 
-class HudPresentation(context: Context, display: Display) : Presentation(context, display) {
+class HudPreviewDialog(context: Context) : AppCompatDialog(context) {
+
     private var hudUi: HudUi? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.hud_layout)
+        window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         hudUi = window?.decorView?.let { HudUi(it) }
     }
 
-    fun updateIssue(issue: WarehouseIssue?, stage: PickScanStage? = null) {
+    fun render(issue: WarehouseIssue?, stage: PickScanStage?) {
         hudUi?.render(issue, stage)
     }
 }
+

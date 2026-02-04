@@ -10,7 +10,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue
 import com.example.warehousewrangler.models.WarehouseIssue
 import java.util.concurrent.Executors
 
-class DynamoDBManager(context: Context) {
+class DynamoDBManager(context: Context) : WarehouseRepository {
     private val dbMapper: DynamoDBMapper
 
     init {
@@ -27,7 +27,7 @@ class DynamoDBManager(context: Context) {
     // Run network operations on a background thread
     private val executor = Executors.newSingleThreadExecutor()
 
-    fun fetchAssignedIssue(userId: String, callback: (WarehouseIssue?) -> Unit) {
+    override fun fetchAssignedIssue(userId: String, callback: (WarehouseIssue?) -> Unit) {
         executor.execute {
             retryOperation(
                 block = {
@@ -52,7 +52,7 @@ class DynamoDBManager(context: Context) {
         }
     }
 
-    fun updateIssue(issue: WarehouseIssue, callback: (Boolean) -> Unit) {
+    override fun updateIssue(issue: WarehouseIssue, callback: (Boolean) -> Unit) {
         executor.execute {
             retryOperation(
                 block = {
