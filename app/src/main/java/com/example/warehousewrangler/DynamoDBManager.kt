@@ -29,35 +29,71 @@ class DynamoDBManager(context: Context) {
 
     fun fetchAssignedIssue(userId: String, callback: (WarehouseIssue?) -> Unit) {
         executor.execute {
-            try {
-                // Using scan for simplicity. In production, use Query with Index.
-                val expression = DynamoDBScanExpression()
-                val attributeValues = HashMap<String, AttributeValue>()
-                attributeValues[":user"] = AttributeValue().withS(userId)
-                attributeValues[":status"] = AttributeValue().withS("ASSIGNED")
+            retryOperation(
+                block = {
+                    // Using scan for simplicity. In production, use Query with Index.
+                    val expression = DynamoDBScanExpression()
+                    val attributeValues = HashMap<String, AttributeValue>()
+                    attributeValues[":user"] = AttributeValue().withS(userId)
+                    attributeValues[":status"] = AttributeValue().withS("ASSIGNED")
 
-                expression.filterExpression = "assigned_user = :user AND status = :status"
-                expression.expressionAttributeValues = attributeValues
+                    expression.filterExpression = "assigned_user = :user AND status = :status"
+                    expression.expressionAttributeValues = attributeValues
 
-                val result = dbMapper.scan(WarehouseIssue::class.java, expression)
-                // Return the first one found
-                val issue = if (result.isNotEmpty()) result[0] else null
-                callback(issue)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                callback(null)
-            }
+                    val result = dbMapper.scan(WarehouseIssue::class.java, expression)
+                    // Return the first one found
+                    val issue = if (result.isNotEmpty()) result[0] else null
+                    callback(issue)
+                },
+                onError = {
+                    callback(null)
+                }
+            )
         }
     }
 
     fun updateIssue(issue: WarehouseIssue, callback: (Boolean) -> Unit) {
         executor.execute {
+            retryOperation(
+                block = {
+                    dbMapper.save(issue)
+                    callback(true)
+                },
+                onError = {
+                     callback(false)
+                }
+            )
+        }
+    }
+
+    private fun <T> retryOperation(retries: Int = 3, delayMs: Long = 1000, onError: (() -> Unit)? = null, block: () -> T) {
+        var attempt = 0
+        while (attempt < retries) {
             try {
-                dbMapper.save(issue)
-                callback(true)
+                block()
+                return
             } catch (e: Exception) {
+                attempt++
                 e.printStackTrace()
-                callback(false)
+                if (attempt >= retries) {
+                    if (onError != null) {
+                        onError()
+                    } else {
+                        // For fetch, we might just want to return null via callback if passed, but here we handled it inside block mostly.
+                        // Ideally, refactor so callback is called here on failure.
+                        // However, strictly following the existing pattern:
+                        // If it fails completely, we swallow if no onError provided?
+                        // The original code passed callback(null) in catch.
+                        // Let's assume the caller handles the 'null' via callback inside 'block' if it was structured that way,
+                        // but 'block' here includes the logic that MIGHT fail.
+                        // Actually, better design:
+                    }
+                }
+                try {
+                    Thread.sleep(delayMs * attempt)
+                } catch (ie: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                }
             }
         }
     }

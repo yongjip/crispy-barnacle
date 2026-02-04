@@ -66,4 +66,12 @@
         android:layout_marginTop="16dp"
         android:text="Load Next Task" />
 
+    <Button
+        android:id="@+id/btn_ar_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Switch to AR Mode"
+        android:backgroundTint="@android:color/holo_purple" />
+
 </LinearLayout>

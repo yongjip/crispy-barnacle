@@ -8,13 +8,17 @@ import android.view.Display
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.warehousewrangler.models.WarehouseIssue
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var dynamoDBManager: DynamoDBManager
+    private val viewModel: WarehouseViewModel by viewModels {
+        WarehouseViewModelFactory(DynamoDBManager(applicationContext))
+    }
+
     private lateinit var scanReceiver: ScanReceiver
     var hudPresentation: HudPresentation? = null
 
@@ -24,10 +28,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var tvScannedSku: TextView
     lateinit var btnMissing: Button
     lateinit var btnNext: Button
-
-    // Data State
-    var currentIssue: WarehouseIssue? = null
-    var currentUserId: String = "USER_001" // Hardcoded for demo
+    lateinit var btnArMode: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,9 +40,20 @@ class MainActivity : AppCompatActivity() {
         tvScannedSku = findViewById(R.id.tv_scanned_sku)
         btnMissing = findViewById(R.id.btn_missing)
         btnNext = findViewById(R.id.btn_next)
+        btnArMode = findViewById(R.id.btn_ar_mode)
 
-        // Init Managers
-        dynamoDBManager = DynamoDBManager(this)
+        // Observe ViewModel
+        viewModel.currentIssue.observe(this) { issue ->
+            updateUiState(issue)
+        }
+
+        viewModel.statusMessage.observe(this) { message ->
+            tvStatus.text = message
+        }
+
+        viewModel.toastMessage.observe(this) { message ->
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
 
         // Scan Receiver
         scanReceiver = ScanReceiver { data ->
@@ -72,37 +84,17 @@ class MainActivity : AppCompatActivity() {
 
         // Setup Buttons
         btnMissing.setOnClickListener { showMissingConfirmationDialog() }
-        btnNext.setOnClickListener { loadNextTask() }
+        btnNext.setOnClickListener { viewModel.loadNextTask() }
+        btnArMode.setOnClickListener {
+            val intent = android.content.Intent(this, ArActivity::class.java)
+            startActivity(intent)
+        }
 
         // Initial Load
-        loadNextTask()
+        viewModel.loadNextTask()
     }
 
-    private fun loadNextTask() {
-        tvStatus.text = "Status: Loading..."
-        dynamoDBManager.fetchAssignedIssue(currentUserId) { issue ->
-            runOnUiThread {
-                if (issue != null) {
-                    currentIssue = issue
-                    // Keep currentQty from DB or default to 0
-                    updateUiState()
-                    tvStatus.text = "Status: Searching"
-
-                    if (currentIssue?.status == "ASSIGNED") {
-                        currentIssue?.status = "SEARCHING"
-                        dynamoDBManager.updateIssue(currentIssue!!) { /* error handling? */ }
-                    }
-                } else {
-                    currentIssue = null
-                    tvStatus.text = "Status: No Tasks Assigned"
-                    updateUiState()
-                }
-            }
-        }
-    }
-
-    private fun updateUiState() {
-        val issue = currentIssue
+    private fun updateUiState(issue: WarehouseIssue?) {
         if (issue != null) {
             val info = "Loc: ${issue.locationCode}\nSKU: ${issue.skuId}\nQty: ${issue.currentQty} / ${issue.targetQty}"
             tvIssueInfo.text = info
@@ -127,36 +119,13 @@ class MainActivity : AppCompatActivity() {
         if (hudPresentation == null) {
             hudPresentation = HudPresentation(this, display)
             hudPresentation!!.show()
-            updateUiState()
+            updateUiState(viewModel.currentIssue.value)
         }
     }
 
     fun onScanReceived(data: String) {
         tvScannedSku.text = "Last Scan: $data"
-        val issue = currentIssue ?: return
-
-        if (data == issue.skuId) {
-            issue.currentQty += 1
-            updateUiState()
-
-            if (issue.currentQty >= issue.targetQty) {
-                // Completed
-                issue.status = "FOUND"
-                tvStatus.text = "Status: Item Found! Updating..."
-                dynamoDBManager.updateIssue(issue) { success ->
-                    runOnUiThread {
-                        if (success) {
-                            Toast.makeText(this, "Task Completed!", Toast.LENGTH_SHORT).show()
-                            loadNextTask()
-                        } else {
-                            Toast.makeText(this, "Error Updating DB", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            }
-        } else {
-            Toast.makeText(this, "Wrong SKU!", Toast.LENGTH_SHORT).show()
-        }
+        viewModel.processScan(data)
     }
 
     private fun showMissingConfirmationDialog() {
@@ -164,26 +133,10 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Confirm")
             .setMessage("Are you sure you want to mark this item as MISSING?")
             .setPositiveButton("Mark Missing") { _, _ ->
-                markAsMissing()
+                viewModel.markAsMissing()
             }
             .setNegativeButton("Cancel", null)
             .show()
-    }
-
-    private fun markAsMissing() {
-        val issue = currentIssue ?: return
-        issue.status = "MISSING"
-        tvStatus.text = "Status: Marking Missing..."
-        dynamoDBManager.updateIssue(issue) { success ->
-             runOnUiThread {
-                if (success) {
-                    Toast.makeText(this, "Marked Missing", Toast.LENGTH_SHORT).show()
-                    loadNextTask()
-                } else {
-                    Toast.makeText(this, "Error Updating DB", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
     }
 
     override fun onDestroy() {
