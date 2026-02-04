@@ -8,6 +8,7 @@ import android.view.Display
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.warehousewrangler.models.WarehouseIssue
 
@@ -70,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         checkForExternalDisplay(displayManager)
 
         // Setup Buttons
-        btnMissing.setOnClickListener { markAsMissing() }
+        btnMissing.setOnClickListener { showMissingConfirmationDialog() }
         btnNext.setOnClickListener { loadNextTask() }
 
         // Initial Load
@@ -156,6 +157,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "Wrong SKU!", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showMissingConfirmationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Confirm")
+            .setMessage("Are you sure you want to mark this item as MISSING?")
+            .setPositiveButton("Mark Missing") { _, _ ->
+                markAsMissing()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun markAsMissing() {
