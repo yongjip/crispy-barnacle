@@ -79,7 +79,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:text="Mark as MISSING"
-        android:backgroundTint="@android:color/holo_red_light" />
+        android:backgroundTint="@android:color/holo_red_dark" />
 
     <Button
         android:id="@+id/btn_next"
