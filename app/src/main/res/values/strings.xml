@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">Warehouse Wrangler</string>
+    <string name="title_main">Warehouse Wrangler (PDA)</string>
+    <string name="status_idle">Status: Idle</string>
+    <string name="no_issue_loaded">No Issue Loaded</string>
+    <string name="last_scan_none">Last Scan: None</string>
+    <string name="hint_manual_scan">Manual scan (location / barcode)</string>
+    <string name="btn_simulate_scan">Simulate Scan</string>
+    <string name="btn_mark_missing">Mark as MISSING</string>
+    <string name="btn_load_next">Load Next Task</string>
+    <string name="btn_ar_mode">Switch to AR Mode</string>
+    <string name="btn_hud_preview">Open HUD Preview</string>
+
+    <!-- Dialogs -->
+    <string name="confirm_title">Confirm</string>
+    <string name="confirm_missing_msg">Are you sure you want to mark this item as MISSING?</string>
+    <string name="btn_confirm_missing">Mark Missing</string>
+    <string name="btn_cancel">Cancel</string>
+
+    <!-- ViewModel / Dynamic Strings -->
+    <!-- These might need to be fetched via Context in Activity or refactored -->
+    <string name="status_loading">Status: Loading...</string>
+    <string name="status_scan_loc">Status: Scan Location</string>
+    <string name="status_scan_item">Status: Scan Item</string>
+    <string name="status_no_tasks">Status: No Tasks Assigned</string>
+    <string name="status_item_found">Status: Item Found! Updating...</string>
+    <string name="status_marking_missing">Status: Marking Missing...</string>
+
+    <string name="toast_loc_confirmed">Location confirmed: %1$s</string>
+    <string name="toast_wrong_loc">Wrong Location!</string>
+    <string name="toast_wrong_sku">Wrong SKU!</string>
+    <string name="toast_item_scanned">Item Scanned. %1$d/%2$d</string>
+    <string name="toast_task_completed">Task Completed!</string>
+    <string name="toast_error_db">Error Updating DB</string>
+    <string name="toast_marked_missing">Marked Missing</string>
+</resources>

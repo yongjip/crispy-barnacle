@@ -7,14 +7,12 @@ import android.os.Bundle
 import android.os.Build
 import android.view.Display
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.warehousewrangler.models.WarehouseIssue
-import com.google.android.material.textfield.TextInputEditText
+import com.example.warehousewrangler.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,35 +25,15 @@ class MainActivity : AppCompatActivity() {
         WarehouseViewModelFactory(repository)
     }
 
+    private lateinit var binding: ActivityMainBinding
     private lateinit var scanReceiver: ScanReceiver
     var hudPresentation: HudPresentation? = null
     private var hudPreviewDialog: HudPreviewDialog? = null
 
-    // UI Elements
-    lateinit var tvStatus: TextView
-    lateinit var tvIssueInfo: TextView
-    lateinit var tvScannedSku: TextView
-    lateinit var etManualScan: TextInputEditText
-    lateinit var btnMissing: Button
-    lateinit var btnManualScan: Button
-    lateinit var btnNext: Button
-    lateinit var btnArMode: Button
-    lateinit var btnHudPreview: Button
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        // Init UI
-        tvStatus = findViewById(R.id.tv_status_main)
-        tvIssueInfo = findViewById(R.id.tv_issue_info)
-        tvScannedSku = findViewById(R.id.tv_scanned_sku)
-        etManualScan = findViewById(R.id.et_manual_scan)
-        btnMissing = findViewById(R.id.btn_missing)
-        btnManualScan = findViewById(R.id.btn_manual_scan)
-        btnNext = findViewById(R.id.btn_next)
-        btnArMode = findViewById(R.id.btn_ar_mode)
-        btnHudPreview = findViewById(R.id.btn_hud_preview)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Observe ViewModel
         viewModel.currentIssue.observe(this) { issue ->
@@ -69,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.statusMessage.observe(this) { message ->
-            tvStatus.text = message
+            binding.tvStatusMain.text = message
         }
 
         viewModel.toastMessage.observe(this) { message ->
@@ -110,10 +88,10 @@ class MainActivity : AppCompatActivity() {
         checkForExternalDisplay(displayManager)
 
         // Setup Buttons
-        btnMissing.setOnClickListener { showMissingConfirmationDialog() }
-        btnNext.setOnClickListener { viewModel.loadNextTask() }
-        btnManualScan.setOnClickListener { submitManualScan() }
-        etManualScan.setOnEditorActionListener { _, actionId, _ ->
+        binding.btnMissing.setOnClickListener { showMissingConfirmationDialog() }
+        binding.btnNext.setOnClickListener { viewModel.loadNextTask() }
+        binding.btnManualScan.setOnClickListener { submitManualScan() }
+        binding.etManualScan.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 submitManualScan()
                 true
@@ -121,11 +99,11 @@ class MainActivity : AppCompatActivity() {
                 false
             }
         }
-        btnArMode.setOnClickListener {
+        binding.btnArMode.setOnClickListener {
             val intent = android.content.Intent(this, ArActivity::class.java)
             startActivity(intent)
         }
-        btnHudPreview.setOnClickListener { toggleHudPreview() }
+        binding.btnHudPreview.setOnClickListener { toggleHudPreview() }
 
         // Initial Load
         viewModel.loadNextTask()
@@ -141,9 +119,9 @@ class MainActivity : AppCompatActivity() {
                 append("LOT: ${issue.lotNumber ?: "--"}\n")
                 append("Qty: ${issue.currentQty} / ${issue.targetQty}")
             }
-            tvIssueInfo.text = info
+            binding.tvIssueInfo.text = info
         } else {
-            tvIssueInfo.text = "No active issue."
+            binding.tvIssueInfo.text = getString(R.string.no_issue_loaded)
         }
 
         val stage = viewModel.pickScanStage.value
@@ -170,15 +148,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onScanReceived(data: String) {
-        tvScannedSku.text = "Last Scan: $data"
+        binding.tvScannedSku.text = "Last Scan: $data"
         viewModel.processScan(data)
     }
 
     private fun submitManualScan() {
-        val text = etManualScan.text?.toString().orEmpty().trim()
+        val text = binding.etManualScan.text?.toString().orEmpty().trim()
         if (text.isBlank()) return
         onScanReceived(text)
-        etManualScan.setText("")
+        binding.etManualScan.setText("")
     }
 
     private fun toggleHudPreview() {
@@ -196,12 +174,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showMissingConfirmationDialog() {
         AlertDialog.Builder(this)
-            .setTitle("Confirm")
-            .setMessage("Are you sure you want to mark this item as MISSING?")
-            .setPositiveButton("Mark Missing") { _, _ ->
+            .setTitle(getString(R.string.confirm_title))
+            .setMessage(getString(R.string.confirm_missing_msg))
+            .setPositiveButton(getString(R.string.btn_confirm_missing)) { _, _ ->
                 viewModel.markAsMissing()
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(getString(R.string.btn_cancel), null)
             .show()
     }
 
