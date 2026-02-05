@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Warehouse Wrangler (PDA)"
+        android:text="@string/title_main"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Status: Idle"
+        android:text="@string/status_idle"
         android:textSize="18sp" />
 
     <androidx.cardview.widget.CardView
@@ -38,7 +38,7 @@
                 android:id="@+id/tv_issue_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="No Issue Loaded"
+                android:text="@string/no_issue_loaded"
                 android:textSize="18sp" />
 
              <TextView
@@ -46,7 +46,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Last Scan: None"
+                android:text="@string/last_scan_none"
                 android:textColor="@android:color/holo_red_dark" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -55,7 +55,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Manual scan (location / barcode)">
+        android:hint="@string/hint_manual_scan">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_manual_scan"
@@ -71,14 +71,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Simulate Scan" />
+        android:text="@string/btn_simulate_scan" />
 
     <Button
         android:id="@+id/btn_missing"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="Mark as MISSING"
+        android:text="@string/btn_mark_missing"
         android:backgroundTint="@android:color/holo_red_light" />
 
     <Button
@@ -86,14 +86,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Load Next Task" />
+        android:text="@string/btn_load_next" />
 
     <Button
         android:id="@+id/btn_ar_mode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Switch to AR Mode"
+        android:text="@string/btn_ar_mode"
         android:backgroundTint="@android:color/holo_purple" />
 
     <Button
@@ -101,6 +101,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Open HUD Preview" />
+        android:text="@string/btn_hud_preview" />
 
 </LinearLayout>
