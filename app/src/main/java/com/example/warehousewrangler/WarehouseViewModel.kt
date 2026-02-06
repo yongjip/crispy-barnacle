@@ -25,11 +25,16 @@ class WarehouseViewModel(private val repository: WarehouseRepository) : ViewMode
     private val _pickScanStage = MutableLiveData<PickScanStage>()
     val pickScanStage: LiveData<PickScanStage> = _pickScanStage
 
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
+
     private val _userId = "USER_001" // Hardcoded for now
 
     fun loadNextTask() {
         _statusMessage.postValue("Status: Loading...")
+        _isLoading.postValue(true)
         repository.fetchAssignedIssue(_userId) { issue ->
+            _isLoading.postValue(false)
             if (issue != null) {
                 if (issue.status == "ASSIGNED") {
                     issue.status = "SEARCHING"
@@ -97,6 +102,7 @@ class WarehouseViewModel(private val repository: WarehouseRepository) : ViewMode
     private fun completeIssue(issue: WarehouseIssue) {
         issue.status = "FOUND"
         _statusMessage.postValue("Status: Item Found! Updating...")
+        _isLoading.postValue(true)
 
         repository.updateIssue(issue) { success ->
             if (success) {
@@ -104,6 +110,7 @@ class WarehouseViewModel(private val repository: WarehouseRepository) : ViewMode
                 loadNextTask()
             } else {
                 _toastMessage.postValue("Error Updating DB")
+                _isLoading.postValue(false)
             }
         }
     }
@@ -112,6 +119,7 @@ class WarehouseViewModel(private val repository: WarehouseRepository) : ViewMode
         val issue = _currentIssue.value ?: return
         issue.status = "MISSING"
         _statusMessage.postValue("Status: Marking Missing...")
+        _isLoading.postValue(true)
 
         repository.updateIssue(issue) { success ->
             if (success) {
@@ -119,6 +127,7 @@ class WarehouseViewModel(private val repository: WarehouseRepository) : ViewMode
                 loadNextTask()
             } else {
                 _toastMessage.postValue("Error Updating DB")
+                _isLoading.postValue(false)
             }
         }
     }

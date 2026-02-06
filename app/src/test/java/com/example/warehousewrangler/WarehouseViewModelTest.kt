@@ -182,4 +182,22 @@ class WarehouseViewModelTest {
         viewModel.processScan("TARGET-SKU")
         assertEquals(1, issue.currentQty)
     }
+
+    @Test
+    fun `loadNextTask updates loading state`() {
+        val observer = mock(Observer::class.java) as Observer<Boolean>
+        viewModel.isLoading.observeForever(observer)
+
+        doAnswer {
+            val callback = it.arguments[1] as (WarehouseIssue?) -> Unit
+            callback(null)
+            null
+        }.`when`(mockRepo).fetchAssignedIssue(ArgumentMatchers.anyString(), any())
+
+        viewModel.loadNextTask()
+
+        val inOrder = inOrder(observer)
+        inOrder.verify(observer).onChanged(true)
+        inOrder.verify(observer).onChanged(false)
+    }
 }

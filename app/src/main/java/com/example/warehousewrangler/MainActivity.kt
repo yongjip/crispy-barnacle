@@ -76,6 +76,13 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
 
+        viewModel.isLoading.observe(this) { isLoading ->
+            btnNext.isEnabled = !isLoading
+            btnMissing.isEnabled = !isLoading
+            btnManualScan.isEnabled = !isLoading
+            btnNext.text = if (isLoading) "Loading..." else "Load Next Task"
+        }
+
         // Scan Receiver
         scanReceiver = ScanReceiver { data ->
             onScanReceived(data)
