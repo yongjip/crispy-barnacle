@@ -13,8 +13,10 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doOnTextChanged
 import com.example.warehousewrangler.models.WarehouseIssue
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var tvStatus: TextView
     lateinit var tvIssueInfo: TextView
     lateinit var tvScannedSku: TextView
+    lateinit var tilManualScan: TextInputLayout
     lateinit var etManualScan: TextInputEditText
     lateinit var btnMissing: Button
     lateinit var btnManualScan: Button
@@ -50,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         tvStatus = findViewById(R.id.tv_status_main)
         tvIssueInfo = findViewById(R.id.tv_issue_info)
         tvScannedSku = findViewById(R.id.tv_scanned_sku)
+        tilManualScan = findViewById(R.id.til_manual_scan)
         etManualScan = findViewById(R.id.et_manual_scan)
         btnMissing = findViewById(R.id.btn_missing)
         btnManualScan = findViewById(R.id.btn_manual_scan)
@@ -120,6 +124,11 @@ class MainActivity : AppCompatActivity() {
         btnMissing.setOnClickListener { showMissingConfirmationDialog() }
         btnNext.setOnClickListener { viewModel.loadNextTask() }
         btnManualScan.setOnClickListener { submitManualScan() }
+
+        etManualScan.doOnTextChanged { _, _, _, _ ->
+            tilManualScan.isErrorEnabled = false
+        }
+
         etManualScan.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 submitManualScan()
@@ -183,7 +192,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun submitManualScan() {
         val text = etManualScan.text?.toString().orEmpty().trim()
-        if (text.isBlank()) return
+        if (text.isBlank()) {
+            tilManualScan.error = "Please enter a value"
+            return
+        }
         onScanReceived(text)
         etManualScan.setText("")
     }
