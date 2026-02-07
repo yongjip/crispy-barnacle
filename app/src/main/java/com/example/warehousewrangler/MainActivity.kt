@@ -6,8 +6,10 @@ import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.os.Build
 import android.view.Display
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -35,6 +37,7 @@ class MainActivity : AppCompatActivity() {
 
     // UI Elements
     lateinit var tvStatus: TextView
+    lateinit var progressBar: ProgressBar
     lateinit var tvIssueInfo: TextView
     lateinit var tvScannedSku: TextView
     lateinit var tilManualScan: TextInputLayout
@@ -51,6 +54,7 @@ class MainActivity : AppCompatActivity() {
 
         // Init UI
         tvStatus = findViewById(R.id.tv_status_main)
+        progressBar = findViewById(R.id.progress_bar_main)
         tvIssueInfo = findViewById(R.id.tv_issue_info)
         tvScannedSku = findViewById(R.id.tv_scanned_sku)
         tilManualScan = findViewById(R.id.til_manual_scan)
@@ -85,6 +89,7 @@ class MainActivity : AppCompatActivity() {
             btnMissing.isEnabled = !isLoading
             btnManualScan.isEnabled = !isLoading
             btnNext.text = if (isLoading) "Loading..." else "Load Next Task"
+            progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         // Scan Receiver
