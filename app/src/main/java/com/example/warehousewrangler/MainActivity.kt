@@ -8,9 +8,11 @@ import android.os.Build
 import android.view.Display
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
+import coil.load
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
@@ -37,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var tvStatus: TextView
     lateinit var tvIssueInfo: TextView
     lateinit var tvScannedSku: TextView
+    lateinit var ivSkuPreview: ImageView
     lateinit var tilManualScan: TextInputLayout
     lateinit var etManualScan: TextInputEditText
     lateinit var btnMissing: Button
@@ -53,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         tvStatus = findViewById(R.id.tv_status_main)
         tvIssueInfo = findViewById(R.id.tv_issue_info)
         tvScannedSku = findViewById(R.id.tv_scanned_sku)
+        ivSkuPreview = findViewById(R.id.iv_sku_preview)
         tilManualScan = findViewById(R.id.til_manual_scan)
         etManualScan = findViewById(R.id.et_manual_scan)
         btnMissing = findViewById(R.id.btn_missing)
@@ -158,8 +162,17 @@ class MainActivity : AppCompatActivity() {
                 append("Qty: ${issue.currentQty} / ${issue.targetQty}")
             }
             tvIssueInfo.text = info
+
+            if (!issue.skuImageUrl.isNullOrBlank()) {
+                ivSkuPreview.load(issue.skuImageUrl) {
+                    crossfade(true)
+                }
+            } else {
+                ivSkuPreview.setImageDrawable(null)
+            }
         } else {
             tvIssueInfo.text = "No active issue."
+            ivSkuPreview.setImageDrawable(null)
         }
 
         val stage = viewModel.pickScanStage.value
